@@ -34,11 +34,9 @@ def make_color_png(color)
 	rgba, w3cname = chunkify_color(color)
 	hex = color.to_s(16)
 	png = ChunkyPNG::Image.new(400, 300, rgba)
-	filename = "#{hex}_#{w3cname}.png"
+	blob = png.to_s
 
-	png.save(filename)
-
-	return hex, w3cname, filename
+	return hex, w3cname, blob
 end
 
 
@@ -86,7 +84,7 @@ end
 def tweet
 	last_color = /0x[0-9a-f]{6}/.match(Twitter.user.status.text)[0].to_i(16) # gross	
 	this_color = choose_color(last_color)
-	hex, w3cname, filename = make_color_png(this_color)
+	hex, w3cname, blob = make_color_png(this_color)
 
 	if w3cname then
 		tweet_text = "0x#{hex} (##{w3cname})"
@@ -94,9 +92,5 @@ def tweet
 		tweet_text = "0x#{hex}"
 	end
 
-	File.open(filename) do |f|
-		Twitter.update_with_media(tweet_text, f)
-	end
-
-	File.delete(filename)
+	Twitter.update_with_media(tweet_text, blob)
 end
